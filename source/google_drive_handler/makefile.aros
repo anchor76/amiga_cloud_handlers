@@ -1,0 +1,43 @@
+# Project: google-drive-handler
+# Compiler: i386-aros-gcc
+
+CURL      = ../thirdparty/libcurl/aros
+OPENSSL   = ../thirdparty/openssl/aros_1.0.2e
+
+CPP       = i386-aros-g++
+CC        = i386-aros-gcc
+AS        = i386-aros-as
+LINK      = i386-aros-g++
+OBJ       = ../shared/start_aros.o ../../obj/google_drive_handler.o ../../obj/dos_handler.o ../../obj/fw_util.o
+LINKOBJ   = $(OBJ)
+LIBS      = -L$(CURL) -L$(OPENSSL) -L$(LIBZ) -s -lcurl -lssl -lcrypto -lz -ldebug -lautoinit -nostartfiles
+# map file generation: -Wl,-Map,google-drive-handler.map,--cref
+INCS      = -I$(CURL)
+CXXINCS   = $(INCS)
+BIN       = "devs/google-drive-handler.aros"
+DEFINES   = -D_CONSOLE -DNO_INLINE_STDARG -DNO_INLINE_VARARGS -D_NOLOG
+CXXFLAGS  = $(CXXINCS) $(DEFINES) -O2 -fno-rtti -fno-exceptions
+# keep asm output: -fverbose-asm -save-temps
+CFLAGS    = $(INCS) $(DEFINES)
+RM        = rm -f
+
+.PHONY: all all-before all-after clean clean-custom
+all: all-before $(BIN) all-after
+
+clean: clean-custom
+	$(RM) $(OBJ) $(BIN)
+	
+install:
+	copy $(BIN) Devs:Google/google-drive-handler
+
+$(BIN): $(OBJ)
+	$(LINK) $(LINKOBJ) -o $(BIN) $(LIBS)
+
+../../obj/google_drive_handler.o: $(GLOBALDEPS) google_drive_handler.cpp
+	$(CPP) -c google_drive_handler.cpp -o ../../obj/google_drive_handler.o $(CXXFLAGS)
+
+../../obj/dos_handler.o: $(GLOBALDEPS) ../shared/dos_handler.cpp
+	$(CPP) -c ../shared/dos_handler.cpp -o ../../obj/dos_handler.o $(CXXFLAGS)
+
+../../obj/fw_util.o: $(GLOBALDEPS) ../shared/fw_util.cpp
+	$(CPP) -c ../shared/fw_util.cpp -o ../../obj/fw_util.o $(CXXFLAGS)

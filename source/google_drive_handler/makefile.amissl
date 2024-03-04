@@ -1,0 +1,51 @@
+# Project: google-drive-handler
+# Compiler: m68k-amiga-gcc
+
+CURL      = ../thirdparty/libcurl/68k
+AMISSL    = ../thirdparty/amissl
+LIBZ      = ../thirdparty/libz/68k
+FRAMEWORK = ../shared
+
+CPP       = m68k-amigaos-g++
+CC        = m68k-amigaos-gcc
+AS        = m68k-amigaos-as
+LINK      = m68k-amigaos-g++
+OBJ       = ../../obj/amissl.o ../../obj/google_drive_handler.o ../../obj/dos_handler.o ../../obj/fw_util.o
+LINKOBJ   = $(OBJ)
+LIBS      = -L$(CURL) -L$(AMISSL)/lib/AmigaOS3 -L$(LIBZ) -s -lcurl_amissl -lz -mcrt=clib2
+# map file generation: -Wl,-Map,google-drive-handler.map,--cref
+INCS      = -I$(CURL) -I$(FRAMEWORK) -I$(AMISSL)/include
+CXXINCS   = $(INCS)
+BIN       = "devs/google-drive-handler.68k"
+DEFINES   = -D_CONSOLE -DNO_INLINE_STDARG -DNO_INLINE_VARARGS -D_NOLOG -DAMISSL
+CXXFLAGS  = $(CXXINCS) $(DEFINES) -m68020-60 -msoft-float -O2 -fno-rtti -fno-exceptions
+# keep asm output: -fverbose-asm -save-temps
+CFLAGS    = $(INCS) $(DEFINES) -noixemul 
+RM        = rm -f
+
+.PHONY: all all-before all-after clean clean-custom
+all: all-before $(BIN) all-after
+
+clean: clean-custom
+	$(RM) $(OBJ) $(BIN)
+	
+install:
+#	cp $(BIN) "../../../../Users/Public/Documents/Amiga Files/WinUAE/dh1/Devs/Cloud"
+#	cp $(BIN) "../../../amikit/amikit/devs/google/google-drive-handler"
+#	copy $(BIN) Devs:Google/google-drive-handler
+
+$(BIN): $(OBJ)
+	$(LINK) $(LINKOBJ) -o $(BIN) $(LIBS)
+
+../../obj/amissl.o: $(GLOBALDEPS) ../shared/amissl.c
+	$(CPP) -c ../shared/amissl.c -o ../../obj/amissl.o $(CXXFLAGS)
+
+../../obj/google_drive_handler.o: $(GLOBALDEPS) google_drive_handler.cpp
+	$(CPP) -c google_drive_handler.cpp -o ../../obj/google_drive_handler.o $(CXXFLAGS)
+
+../../obj/dos_handler.o: $(GLOBALDEPS) ../shared/dos_handler.cpp
+	$(CPP) -c ../shared/dos_handler.cpp -o ../../obj/dos_handler.o $(CXXFLAGS)
+
+../../obj/fw_util.o: $(GLOBALDEPS) $(FRAMEWORK)/fw_util.cpp
+	$(CPP) -c $(FRAMEWORK)/fw_util.cpp -o ../../obj/fw_util.o $(CXXFLAGS)
+

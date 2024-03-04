@@ -1,0 +1,46 @@
+# Project: dropbox-handler
+# Compiler: m68k-amiga-gcc
+
+CURL      = ../thirdparty/libcurl/68k
+OPENSSL   = ../thirdparty/openssl/68k_0.9.8zh
+LIBZ      = ../thirdparty/libz/68k
+
+CPP       = m68k-amigaos-g++
+CC        = m68k-amigaos-gcc
+AS        = m68k-amigaos-as
+LINK      = m68k-amigaos-g++
+OBJ       = ../shared/start_68k.o ../../obj/dropbox_handler.o ../../obj/dos_handler.o ../../obj/fw_util.o
+LINKOBJ   = $(OBJ)
+LIBS      = -L$(CURL) -L$(OPENSSL) -L$(LIBZ) -s -lcurl_098zh -lssl -lcrypto -lz -lnix -lstubs -noixemul -nostartfiles
+# map file generation: -Wl,-Map,dropbox-handler.map,--cref
+INCS      = -I$(CURL)
+CXXINCS   = $(INCS)
+BIN       = "devs/dropbox-handler.68k_log"
+DEFINES   = -D_CONSOLE -DNO_INLINE_STDARG -DNO_INLINE_VARARGS
+CXXFLAGS  = $(CXXINCS) $(DEFINES) -m68020-60 -msoft-float -O2 -fno-rtti -fno-exceptions
+# keep asm output: -fverbose-asm -save-temps
+CFLAGS    = $(INCS) $(DEFINES) -noixemul
+RM        = rm -f
+
+.PHONY: all all-before all-after clean clean-custom
+all: all-before $(BIN) all-after
+
+clean: clean-custom
+	$(RM) $(OBJ) $(BIN)
+	
+install:
+#	cp $(BIN) "../../../../users/public/documents/amiga files/winuae/dh1/devs/cloud/dropbox-handler.68k_log"
+#	cp $(BIN) "../../../../amikit/amikit/devs/dropbox/dropbox-handler"
+#	copy $(BIN) Devs:DropBox/dropbox-handler
+
+$(BIN): $(OBJ)
+	$(LINK) $(LINKOBJ) -o $(BIN) $(LIBS)
+
+../../obj/dropbox_handler.o: $(GLOBALDEPS) dropbox_handler.cpp
+	$(CPP) -c dropbox_handler.cpp -o ../../obj/dropbox_handler.o $(CXXFLAGS)
+
+../../obj/dos_handler.o: $(GLOBALDEPS) ../shared/dos_handler.cpp
+	$(CPP) -c ../shared/dos_handler.cpp -o ../../obj/dos_handler.o $(CXXFLAGS)
+
+../../obj/fw_util.o: $(GLOBALDEPS) ../shared/fw_util.cpp
+	$(CPP) -c ../shared/fw_util.cpp -o ../../obj/fw_util.o $(CXXFLAGS)
